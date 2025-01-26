@@ -1,8 +1,8 @@
 import axios from "axios";
 
-
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // Backend API base URL
+  // Vercel par deployed backend URL
+  baseURL: "https://backend-eisrtmbfk-fuzail142s-projects.vercel.app/api", 
 });
 
 axiosInstance.interceptors.request.use((config) => {

@@ -2,6 +2,7 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "https://backend-tau-amber.vercel.app/api",
+  withCredentials: true,  // Add this line to send cookies with requests
 });
 
 axiosInstance.interceptors.request.use((config) => {

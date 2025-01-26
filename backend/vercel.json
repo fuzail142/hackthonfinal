@@ -2,14 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",  
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/server.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://beneficiary-management-app-two.vercel.app",  
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "/server.js"  
+      "dest": "/server.js"
     }
   ]
 }

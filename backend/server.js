@@ -10,14 +10,13 @@ const app = express();
 
 // Enable CORS with specific origin
 const corsOptions = {
-  origin: 'https://beneficiary-management-app-two.vercel.app/',  // Your frontend URL
+  origin: 'https://beneficiary-management-app-two.vercel.app',  // Your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Allow OPTIONS method
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,  // Allows cookies or other credentials to be sent with requests
 };
 
-// Apply the CORS middleware with options
-app.use(cors(corsOptions));  
+app.use(cors(corsOptions));  // Apply CORS middleware with options
 app.use(express.json());
 
 // Handle preflight request (OPTIONS)

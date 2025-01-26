@@ -11,11 +11,17 @@ const app = express();
 // Enable CORS with specific origin
 const corsOptions = {
   origin: 'https://beneficiary-management-bzzoov8zv-fuzail142s-projects.vercel.app',  // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Allow OPTIONS method
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,  // Allows cookies or other credentials to be sent with requests
 };
 
-app.use(cors(corsOptions));  // Apply the CORS middleware with options
+// Apply the CORS middleware with options
+app.use(cors(corsOptions));  
 app.use(express.json());
+
+// Handle preflight request (OPTIONS)
+app.options('*', cors(corsOptions));  // Allow preflight request from all routes
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));

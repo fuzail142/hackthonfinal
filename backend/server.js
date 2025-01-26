@@ -7,7 +7,14 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
+// Enable CORS with specific origin
+const corsOptions = {
+  origin: 'https://beneficiary-management-bzzoov8zv-fuzail142s-projects.vercel.app',  // Your frontend URL
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));  // Apply the CORS middleware with options
 app.use(express.json());
 
 // Routes
@@ -17,4 +24,3 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-app.use(cors({ origin: 'http://localhost:3000' })); // Adjust your fr

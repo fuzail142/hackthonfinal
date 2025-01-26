@@ -1,51 +1,106 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Ensure correct path to your context
+import { useAuth } from "../context/AuthContext";
 import axiosInstance from "../services/axiosInstance";
-import * as jwt_decode from "jwt-decode"; // Corrected import
-import { Card, CardContent, Typography, TextField, Button, CircularProgress } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+} from "@mui/material";
+
+// Manual token decoder
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split(".")[1]; // Extract payload part
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload); // Parse JSON payload
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
+};
 
 const Login = () => {
-  const { login } = useAuth(); // Hook to access login function from context
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading state
+    setLoading(true);
 
     try {
-      const response = await axiosInstance.post("/auth/login", { email, password });
-      setLoading(false); // Stop loading after response
+      const response = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
 
-      console.log("Login Response:", response.data);
-
+      setLoading(false);
       const token = response.data.token;
-      const decodedToken = jwt_decode(token); // Decode the token to get the role
-      const role = decodedToken.role; // Extract the role from the token
 
-      console.log("User Role:", role); // Log the role
-
-      login(response.data); // Proceed with login logic
-
-      if (role !== "Admin" && role !== "Receptionist" && role !== "Staff") {
-        setError("Invalid role. Contact the administrator.");
-      } else {
-        setError("");  // Clear any previous errors
+      // Decode token manually
+      const decodedToken = decodeToken(token);
+      if (!decodedToken) {
+        setError("Invalid token format.");
+        return;
       }
+
+      const role = decodedToken.role;
+
+      login(response.data);
+
+      if (role === "Admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "Receptionist") {
+        navigate("/receptionist-dashboard");
+      } else if (role === "Staff") {
+        navigate("/staff-dashboard");
+      } else {
+        setError("Invalid role. Contact the administrator.");
+      }
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials and try again."
+      );
+      console.error("Login Error:", err);
+    }
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", backgroundColor: "#f7fafc" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        backgroundColor: "#f7fafc",
+      }}
+    >
       <Card variant="outlined" sx={{ maxWidth: 400, width: "100%" }}>
         <CardContent>
           <Typography variant="h5" component="h1" gutterBottom>
             Login
           </Typography>
-          {error && <Typography variant="body2" color="error" gutterBottom>{error}</Typography>}
+          {error && (
+            <Typography variant="body2" color="error" gutterBottom>
+              {error}
+            </Typography>
+          )}
           <form onSubmit={handleSubmit}>
             <TextField
               label="Email"
@@ -73,9 +128,13 @@ const Login = () => {
               color="primary"
               fullWidth
               sx={{ marginTop: 2 }}
-              disabled={loading} // Disable button while loading
+              disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Login"} {/* Display loading spinner */}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Login"
+              )}
             </Button>
           </form>
         </CardContent>

@@ -23,12 +23,22 @@ const decodeToken = (token) => {
         .join("")
     );
 
-    return JSON.parse(jsonPayload); // Parse JSON payload
+    const decoded = JSON.parse(jsonPayload); // Parse JSON payload
+
+    // Check if token is expired
+    const currentTime = Math.floor(Date.now() / 1000); // in seconds
+    if (decoded.exp < currentTime) {
+      console.error("Token has expired");
+      return null;
+    }
+
+    return decoded;
   } catch (error) {
     console.error("Invalid token:", error);
     return null;
   }
 };
+
 
 const Login = () => {
   const { login } = useAuth();
@@ -41,27 +51,30 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
       const response = await axiosInstance.post("/auth/login", {
         email,
         password,
       });
-
+  
       setLoading(false);
       const token = response.data.token;
-
+  
       // Decode token manually
       const decodedToken = decodeToken(token);
       if (!decodedToken) {
         setError("Invalid token format.");
         return;
       }
-
+  
       const role = decodedToken.role;
-
-      login(response.data);
-
+  
+      // Save token to localStorage
+      localStorage.setItem("authToken", token);
+  
+      login(response.data); // Set login state or context
+  
       if (role === "Admin") {
         navigate("/admin-dashboard");
       } else if (role === "Receptionist") {
@@ -80,6 +93,7 @@ const Login = () => {
       console.error("Login Error:", err);
     }
   };
+  
 
   return (
     <div
